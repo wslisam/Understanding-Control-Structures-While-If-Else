@@ -1,6 +1,6 @@
 # Understanding-Control-Structures-While-If-Else
 
-<img width="2491" height="998" alt="image" src="https://github.com/user-attachments/assets/bb407164-a95f-4e34-a0dc-5c2b45668f77" />
+<img width="2476" height="1314" alt="image" src="https://github.com/user-attachments/assets/2b9086b5-0fd5-42c4-8d43-17bfd5768a49" />
 
 ## 🎯 Learning Objectives
 
