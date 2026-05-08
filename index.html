@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Control Structures: While & If-Else</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+            color: #0f172a;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Premium Accent Borders */
+        .panel-accent-blue { border-top: 4px solid #0ea5e9; }
+        .panel-accent-purple { border-top: 4px solid #8b5cf6; }
+        .panel-accent-amber { border-top: 4px solid #f59e0b; }
+        .panel-accent-emerald { border-top: 4px solid #10b981; }
+
+        /* Code Highlighting */
+        .highlight-line {
+            background-color: rgba(59, 130, 246, 0.2);
+            border-left-color: #3b82f6 !important;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        /* Textarea locking state */
+        .locked-textarea {
+            background-color: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+            border-color: #cbd5e1;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* View transitions */
+        .app-view { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .app-view.active { display: flex; flex-direction: column; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Trace Table row animation */
+        .new-row { animation: flashRow 1.5s ease-out; }
+        @keyframes flashRow {
+            0% { background-color: #fef3c7; }
+            100% { background-color: transparent; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- App Header -->
+    <header class="bg-white border-b border-slate-200 shrink-0 z-10 shadow-sm">
+        <div class="px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white p-2.5 rounded-lg shadow-sm">
+                    <i class="fa-solid fa-microchip text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 tracking-tight leading-tight text-lg" data-i18n="app_title">Understanding Control Structures: While & If-Else</h1>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-semibold text-slate-400 hidden sm:block">Created by Sam Li</span>
+                <div class="h-5 w-px bg-slate-200 hidden sm:block"></div>
+                <button id="langToggle" class="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition-colors text-xs font-bold shadow-sm">
+                    <i class="fa-solid fa-language text-blue-600 text-sm"></i>
+                    <span id="langLabel">English</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0">
+            <div class="p-6">
+                <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4" data-i18n="nav_modules">Learning Modules</h2>
+                <nav class="flex flex-col gap-2">
+                    <button class="nav-btn active flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-all bg-blue-600 text-white shadow-md shadow-blue-900/50" data-target="view-concept">
+                        <i class="fa-solid fa-lightbulb w-5 text-center"></i>
+                        <span data-i18n="nav_concept">Concept</span>
+                    </button>
+                    <button class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-all hover:bg-slate-800 hover:text-white" data-target="view-simulator">
+                        <i class="fa-solid fa-laptop-code w-5 text-center"></i>
+                        <span data-i18n="nav_sim">Simulator</span>
+                    </button>
+                    <button class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-all hover:bg-slate-800 hover:text-white" data-target="view-think">
+                        <i class="fa-solid fa-brain w-5 text-center"></i>
+                        <span data-i18n="nav_think">Think & Link</span>
+                    </button>
+                    <button class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-all hover:bg-slate-800 hover:text-white" data-target="view-quiz">
+                        <i class="fa-solid fa-clipboard-check w-5 text-center"></i>
+                        <span data-i18n="nav_quiz">Mini-Quiz</span>
+                    </button>
+                </nav>
+            </div>
+            <div class="mt-auto p-6">
+                <div class="bg-slate-800 p-4 rounded-xl text-xs text-slate-400 border border-slate-700/50">
+                    <p class="font-bold text-slate-300 mb-1" data-i18n="tip_title">Pro Tip:</p>
+                    <p data-i18n="tip_desc">Always update the trace table variable by variable.</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto bg-slate-50/50 pt-6 relative">
+            
+            <!-- View 1: Concept Breakdown -->
+            <div id="view-concept" class="app-view active px-8 md:px-12 pb-12 max-w-5xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 panel-accent-blue flex flex-col gap-6">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-100 text-blue-600 mb-2">
+                        <i class="fa-solid fa-apple-whole text-2xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800" data-i18n="concept_title">Concept: The Apple Factory</h2>
+                    <p class="text-slate-600 leading-relaxed text-lg" data-i18n="concept_p1">
+                        Imagine you are managing a quality control conveyor belt. Your logic is cleanly divided into two specific responsibilities:
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="bg-blue-600 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm shrink-0">1</div>
+                                <h3 class="font-bold text-slate-800 text-lg" data-i18n="concept_loop">The Loop (Duration)</h3>
+                            </div>
+                            <p class="text-slate-600 leading-relaxed" data-i18n="concept_loop_desc">
+                                <strong>"How long should I keep working?"</strong> You continue inspecting as long as the conveyor belt is not empty. When it's empty, you stop. We use a <code class="bg-slate-200 px-1 rounded text-sm text-slate-800 code-font">while</code> loop because we don't know the exact count in advance.
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="bg-blue-600 text-white w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm shrink-0">2</div>
+                                <h3 class="font-bold text-slate-800 text-lg" data-i18n="concept_cond">The Condition (Selection)</h3>
+                            </div>
+                            <p class="text-slate-600 leading-relaxed" data-i18n="concept_cond_desc">
+                                <strong>"What do I do with this item?"</strong> For each apple, check its color. If it is Red, pack it in a box. Otherwise (Green), send it to the juicer.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <button class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all self-start flex items-center gap-2" onclick="switchTab('view-simulator')">
+                        <span data-i18n="btn_start_sim">Start Simulator</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- View 2: Interactive Simulator (The Core Feature) -->
+            <div id="view-simulator" class="app-view px-4 md:px-6 pb-12 flex-1">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-[650px]">
+                    
+                    <!-- Left Column: Code Engine -->
+                    <div class="lg:col-span-5 flex flex-col gap-4">
+                        <div class="bg-[#0f172a] rounded-2xl shadow-lg flex flex-col flex-1 border border-slate-700 overflow-hidden">
+                            <div class="bg-[#1e293b] px-5 py-3.5 flex flex-wrap justify-between items-center border-b border-slate-700/80 gap-2">
+                                <span class="text-slate-300 font-bold text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-terminal text-blue-400"></i>
+                                    <span data-i18n="sim_code_title">Algorithm Execution</span>
+                                </span>
+                                <div class="flex bg-[#0f172a] rounded-lg p-1">
+                                    <button id="langPyBtn" class="px-3 py-1 text-xs font-bold rounded-md bg-blue-500/20 text-blue-400 transition-colors">Python</button>
+                                    <button id="langCppBtn" class="px-3 py-1 text-xs font-bold rounded-md text-slate-400 hover:text-slate-200 transition-colors">C++</button>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6 text-slate-300 code-font text-[13px] sm:text-sm leading-loose flex-1 overflow-x-auto relative">
+                                <!-- Python Code -->
+                                <div id="code-py">
+                                    <div id="py-line1" class="pl-3 rounded transition-colors duration-150 border-l-[3px] border-transparent">belt = [<span class="text-red-400 font-bold">'R'</span>, <span class="text-green-400 font-bold">'G'</span>, <span class="text-red-400 font-bold">'R'</span>]</div>
+                                    <div id="py-line2" class="pl-3 rounded transition-colors duration-150 mt-3 border-l-[3px] border-transparent"><span class="text-purple-400 font-bold">while</span> <span class="text-yellow-200">len</span>(belt) > <span class="text-blue-300">0</span>:</div>
+                                    <div id="py-line3" class="pl-7 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-1"><span class="text-blue-300">apple</span> = belt.<span class="text-yellow-200">pop</span>(<span class="text-blue-300">0</span>)</div>
+                                    <div id="py-line4" class="pl-7 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-2"><span class="text-purple-400 font-bold">if</span> <span class="text-blue-300">apple</span> == <span class="text-red-400 font-bold">'R'</span>:</div>
+                                    <div id="py-line5" class="pl-11 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-1">packed += <span class="text-blue-300">1</span></div>
+                                    <div id="py-line6" class="pl-7 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-2"><span class="text-purple-400 font-bold">else</span>:</div>
+                                    <div id="py-line7" class="pl-11 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-1">juiced += <span class="text-blue-300">1</span></div>
+                                </div>
+                                <!-- C++ Code -->
+                                <div id="code-cpp" class="hidden">
+                                    <div id="cpp-line1" class="pl-3 rounded transition-colors duration-150 border-l-[3px] border-transparent"><span class="text-purple-400">vector</span>&lt;<span class="text-purple-400">char</span>&gt; belt = {<span class="text-red-400 font-bold">'R'</span>, <span class="text-green-400 font-bold">'G'</span>, <span class="text-red-400 font-bold">'R'</span>};</div>
+                                    <div id="cpp-line2" class="pl-3 rounded transition-colors duration-150 mt-3 border-l-[3px] border-transparent"><span class="text-purple-400 font-bold">while</span> (!belt.<span class="text-yellow-200">empty</span>()) {</div>
+                                    <div id="cpp-line3" class="pl-7 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-1"><span class="text-purple-400">char</span> <span class="text-blue-300">apple</span> = belt.<span class="text-yellow-200">front</span>(); belt.<span class="text-yellow-200">erase</span>(belt.<span class="text-yellow-200">begin</span>());</div>
+                                    <div id="cpp-line4" class="pl-7 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-2"><span class="text-purple-400 font-bold">if</span> (<span class="text-blue-300">apple</span> == <span class="text-red-400 font-bold">'R'</span>) {</div>
+                                    <div id="cpp-line5" class="pl-11 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-1">packed++;</div>
+                                    <div id="cpp-line6" class="pl-7 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-2">} <span class="text-purple-400 font-bold">else</span> {</div>
+                                    <div id="cpp-line7" class="pl-11 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-1">juiced++;</div>
+                                    <div id="cpp-line8" class="pl-7 rounded transition-colors duration-150 border-l-[3px] border-transparent ml-4 mt-2">}</div>
+                                    <div id="cpp-line9" class="pl-3 rounded transition-colors duration-150 border-l-[3px] border-transparent">}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="flex flex-wrap gap-3 shrink-0">
+                            <button id="prevBtn" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 md:py-4 rounded-xl shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fa-solid fa-backward-step"></i>
+                                <span data-i18n="btn_prev">Step Back</span>
+                            </button>
+                            <button id="stepBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-md shadow-blue-600/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fa-solid fa-forward-step"></i>
+                                <span id="stepBtnText" data-i18n="btn_step">Dry Run Step</span>
+                            </button>
+                            <button id="resetBtn" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-4 md:px-6 py-3 md:py-4 rounded-xl shadow-sm transition-all active:scale-[0.98] flex items-center justify-center whitespace-nowrap" title="Reset">
+                                <i class="fa-solid fa-rotate-right md:mr-2"></i>
+                                <span class="hidden md:inline" data-i18n="btn_reset">Reset</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Memory & Trace Table -->
+                    <div class="lg:col-span-7 flex flex-col gap-6">
+                        
+                        <!-- Memory State (Variables) -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6 panel-accent-purple shrink-0">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-memory text-purple-500"></i>
+                                <span data-i18n="mem_title">Memory State (記憶體狀態)</span>
+                            </h3>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase" data-i18n="var_belt">Belt (輸送帶)</label>
+                                    <div id="beltState" class="text-xl md:text-2xl font-bold text-slate-800 tracking-widest mt-1 min-h-[32px]">🍎🍏🍎</div>
+                                </div>
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase" data-i18n="var_apple">Apple (當前)</label>
+                                    <div id="appleState" class="text-xl md:text-2xl font-bold text-slate-800 mt-1 min-h-[32px]">-</div>
+                                </div>
+                                <div class="bg-red-50 p-3 rounded-xl border border-red-200">
+                                    <label class="text-[10px] font-bold text-red-500 uppercase" data-i18n="var_packed">Packed (裝箱)</label>
+                                    <div id="boxState" class="text-xl md:text-2xl font-black text-red-600 code-font mt-1">0</div>
+                                </div>
+                                <div class="bg-green-50 p-3 rounded-xl border border-green-200">
+                                    <label class="text-[10px] font-bold text-green-600 uppercase" data-i18n="var_juiced">Juiced (榨汁)</label>
+                                    <div id="juiceState" class="text-xl md:text-2xl font-black text-green-600 code-font mt-1">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trace Table -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-1 panel-accent-amber overflow-hidden">
+                            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+                                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                    <i class="fa-solid fa-table-list text-amber-500"></i>
+                                    <span data-i18n="trace_title">Trace Table (追蹤表)</span>
+                                </h3>
+                            </div>
+                            
+                            <!-- Table Wrapper -->
+                            <div class="overflow-y-auto flex-1 bg-white relative">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-white sticky top-0 shadow-sm z-10">
+                                        <tr class="text-[11px] text-slate-400 uppercase tracking-wider code-font">
+                                            <th class="py-3 px-4 font-semibold w-1/3" data-i18n="th_action">Action</th>
+                                            <th class="py-3 px-3 font-semibold text-center border-l border-slate-100" data-i18n="th_belt">belt</th>
+                                            <th class="py-3 px-3 font-semibold text-center border-l border-slate-100" data-i18n="th_apple">apple</th>
+                                            <th class="py-3 px-3 font-semibold text-center border-l border-slate-100" data-i18n="th_packed">packed</th>
+                                            <th class="py-3 px-3 font-semibold text-center border-l border-slate-100" data-i18n="th_juiced">juiced</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="traceTableBody" class="text-[13px] text-slate-600 divide-y divide-slate-100 code-font">
+                                        <!-- Rows rendered by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 3: Think & Link -->
+            <div id="view-think" class="app-view px-8 md:px-12 pb-12 max-w-4xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 panel-accent-emerald flex flex-col gap-6">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                        <i class="fa-solid fa-brain text-emerald-500"></i>
+                        <span data-i18n="think_title">Think & Link</span>
+                    </h2>
+                    <p class="text-lg text-slate-600 leading-relaxed" data-i18n="think_q">
+                        What would happen if we swapped the <code class="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-800">while</code> condition and the <code class="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-800">if</code> condition? For example, if we wrote `while apple == 'R'`? Draft your logic below.
+                    </p>
+                    
+                    <div class="flex flex-col gap-4 mt-2">
+                        <textarea id="thinkInput" class="w-full h-32 p-5 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-base text-slate-700 resize-none shadow-sm"></textarea>
+                        
+                        <div class="flex justify-end">
+                            <button id="compareBtn" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-eye"></i>
+                                <span data-i18n="btn_compare">Compare with Answer</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Expert Answer Box -->
+                    <div id="answerBox" class="hidden mt-4 p-6 bg-slate-50 border-l-4 border-emerald-500 rounded-r-xl shadow-sm">
+                        <h4 class="text-slate-800 font-bold mb-3 flex items-center gap-2 uppercase tracking-wide text-sm" data-i18n="think_a_title">
+                            Expert Analysis
+                        </h4>
+                        <p class="text-slate-600 leading-relaxed" data-i18n="think_a_desc">
+                            If you use <code>while apple == 'R'</code>, the loop terminates the very first time it encounters a green apple. It will ignore the rest of the array completely! The `while` loop determines the <strong>duration (iteration)</strong>, not the <strong>filtering (selection)</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 4: Mini Quiz -->
+            <div id="view-quiz" class="app-view px-8 md:px-12 pb-12 max-w-4xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 panel-accent-purple flex flex-col gap-6">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                        <i class="fa-solid fa-clipboard-check text-purple-500"></i>
+                        <span data-i18n="quiz_title">Knowledge Check</span>
+                    </h2>
+                    
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                        <p class="text-lg text-slate-700 font-semibold mb-6" data-i18n="quiz_q1">
+                            In a `while` loop processing an array, if an item triggers the <code>else</code> branch, what happens immediately after the `else` block finishes executing?
+                        </p>
+                        
+                        <div class="flex flex-col gap-3" id="quiz-options">
+                            <label class="flex items-center p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-white transition-colors bg-white shadow-sm has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50 group">
+                                <input type="radio" name="q1" value="1" class="w-5 h-5 text-purple-600 border-slate-300 focus:ring-purple-500">
+                                <span class="ml-3 text-slate-700 group-hover:text-slate-900 font-medium" data-i18n="quiz_o1">The loop breaks and stops entirely.</span>
+                            </label>
+                            
+                            <label class="flex items-center p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-white transition-colors bg-white shadow-sm has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50 group">
+                                <input type="radio" name="q1" value="2" class="w-5 h-5 text-purple-600 border-slate-300 focus:ring-purple-500">
+                                <span class="ml-3 text-slate-700 group-hover:text-slate-900 font-medium" data-i18n="quiz_o2">It jumps back to the `while` condition check for the next iteration.</span>
+                            </label>
+
+                            <label class="flex items-center p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-white transition-colors bg-white shadow-sm has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50 group">
+                                <input type="radio" name="q1" value="3" class="w-5 h-5 text-purple-600 border-slate-300 focus:ring-purple-500">
+                                <span class="ml-3 text-slate-700 group-hover:text-slate-900 font-medium" data-i18n="quiz_o3">It crashes due to a logic error.</span>
+                            </label>
+                        </div>
+
+                        <button id="submitQuizBtn" class="mt-6 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold shadow-md shadow-purple-600/20 transition-all flex items-center gap-2">
+                            <span data-i18n="btn_submit">Submit Answer</span>
+                        </button>
+
+                        <div id="quizFeedback" class="mt-4 p-4 rounded-xl font-semibold hidden text-[15px]"></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        /* --- Navigation Logic --- */
+        function switchTab(targetId) {
+            document.querySelectorAll('.app-view').forEach(view => {
+                view.classList.remove('active');
+            });
+            document.getElementById(targetId).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-900/50');
+                btn.classList.add('hover:bg-slate-800', 'hover:text-white');
+            });
+            
+            const activeBtn = document.querySelector(`[data-target="${targetId}"]`);
+            activeBtn.classList.remove('hover:bg-slate-800', 'hover:text-white');
+            activeBtn.classList.add('active', 'bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-900/50');
+        }
+
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                switchTab(e.currentTarget.dataset.target);
+            });
+        });
+
+        /* --- Simulator State Variables --- */
+        const initialApples = ['R', 'G', 'R'];
+        let belt = [...initialApples];
+        let step = 0;
+        let packed = 0;
+        let juiced = 0;
+        let currentApple = null;
+        let currentLang = 'tc'; // Default TC
+        let programmingLang = 'py'; // 'py' or 'cpp'
+        let currentLineNum = 0;
+        let historyState = [];
+        let traceData = [];
+
+        /* --- i18n Dictionary --- */
+        const i18n = {
+            en: {
+                app_title: "Understanding Control Structures: While & If-Else",
+                langLabel: "English",
+                nav_modules: "Learning Modules",
+                nav_concept: "Concept", nav_sim: "Simulator", nav_think: "Think & Link", nav_quiz: "Mini-Quiz",
+                tip_title: "Pro Tip:", tip_desc: "Always update the trace table variable by variable.",
+                concept_title: "Concept: The Apple Factory",
+                concept_p1: "Imagine you are managing a quality control conveyor belt. Your logic is cleanly divided into two specific responsibilities:",
+                concept_loop: "The Loop (Duration)", concept_loop_desc: "<strong>'How long should I keep working?'</strong> You continue inspecting as long as the conveyor belt is not empty. When it's empty, you stop. We use a <code class='bg-slate-200 px-1 rounded text-sm text-slate-800 code-font'>while</code> loop because we don't know the exact count in advance.",
+                concept_cond: "The Condition (Selection)", concept_cond_desc: "<strong>'What do I do with this item?'</strong> For each apple, check its color. If it is Red, pack it in a box. Otherwise (Green), send it to the juicer.",
+                btn_start_sim: "Start Simulator",
+                sim_code_title: "Algorithm Execution",
+                btn_prev: "Step Back", btn_step: "Dry Run Step", btn_reset: "Reset",
+                mem_title: "Memory State", var_belt: "Belt", var_apple: "Apple", var_packed: "Packed", var_juiced: "Juiced",
+                trace_title: "Trace Table", th_action: "Action", th_belt: "belt", th_apple: "apple", th_packed: "packed", th_juiced: "juiced",
+                think_title: "Think & Link", think_q: "What would happen if we swapped the <code class='bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-800'>while</code> condition and the <code class='bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-800'>if</code> condition? For example, if we wrote `while apple == 'R'`? Draft your logic below.",
+                btn_compare: "Compare with Answer", think_a_title: "Expert Analysis", think_a_desc: "If you use <code>while apple == 'R'</code>, the loop terminates the very first time it encounters a green apple. It will ignore the rest of the array completely! The `while` loop determines the <strong>duration (iteration)</strong>, not the <strong>filtering (selection)</strong>.",
+                quiz_title: "Knowledge Check", quiz_q1: "In a `while` loop processing an array, if an item triggers the <code>else</code> branch, what happens immediately after the `else` block finishes executing?",
+                quiz_o1: "The loop breaks and stops entirely.", quiz_o2: "It jumps back to the `while` condition check for the next iteration.", quiz_o3: "It crashes due to a logic error.", btn_submit: "Submit Answer",
+                log_init: "Initialize variables", log_while_true: "Check condition: True", log_while_false: "Check condition: False (End)", log_pick: "Extract item from array", log_if_true: "Check IF: True", log_if_false: "Check IF: False", log_pack: "Execute Pack", log_juice: "Execute Juice",
+                empty: "Empty", sim_done: "Simulation Complete"
+            },
+            tc: {
+                app_title: "理解控制結構：結合 While 迴圈與 If-Else 條件",
+                langLabel: "繁體中文",
+                nav_modules: "學習單元",
+                nav_concept: "概念解構", nav_sim: "追蹤模擬", nav_think: "思考與連結", nav_quiz: "自我檢測",
+                tip_title: "小提示：", tip_desc: "追蹤表必須逐個變數、按步就班地更新。",
+                concept_title: "概念：蘋果分類廠",
+                concept_p1: "想像你正在管理一條品管輸送帶。你的邏輯思考清晰地分為兩個不同的責任：",
+                concept_loop: "迴圈 - 持續時間 (Duration)", concept_loop_desc: "<strong>「我應該繼續工作多久？」</strong> 只要輸送帶不是空的，你就繼續檢查。當它空了，你就停止。我們使用 <code class='bg-slate-200 px-1 rounded text-sm text-slate-800 code-font'>while</code> 迴圈是因為我們無法預先確切知道數量。",
+                concept_cond: "條件 - 選擇過濾 (Selection)", concept_cond_desc: "<strong>「我該如何處理這個項目？」</strong> 對於每個蘋果，檢查它的顏色。如果是紅色，就將其裝箱。否則（綠色），送到榨汁機。",
+                btn_start_sim: "開始模擬器",
+                sim_code_title: "演算法源碼 (Source Code)",
+                btn_prev: "退回上一步", btn_step: "執行下一步", btn_reset: "重設",
+                mem_title: "記憶體狀態 (Memory State)", var_belt: "輸送帶 (Belt)", var_apple: "當前蘋果 (Apple)", var_packed: "裝箱數量 (Packed)", var_juiced: "榨汁數量 (Juiced)",
+                trace_title: "追蹤表 (Trace Table)", th_action: "執行動作 (Action)", th_belt: "輸送帶 (belt)", th_apple: "蘋果 (apple)", th_packed: "裝箱 (packed)", th_juiced: "榨汁 (juiced)",
+                think_title: "思考與連結 (Think & Link)", think_q: "如果我們把 <code class='bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-800'>while</code> 條件和 <code class='bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-800'>if</code> 條件互換會怎樣？例如寫成 `while apple == 'R'`？在下方草擬你的邏輯推導。",
+                btn_compare: "核對解析", think_a_title: "專家解析 (Expert Analysis)", think_a_desc: "如果你使用 <code>while apple == 'R'</code>，迴圈會在第一次遇到綠蘋果時就提早終止，完全忽略陣列剩下的項目！`while` 迴圈決定的是<strong>過程的持續時間 (iteration)</strong>，而不是用來作<strong>資料過濾 (selection)</strong>。",
+                quiz_title: "自我檢測 (Mini-Quiz)", quiz_q1: "在一個處理陣列的 `while` 迴圈中，如果某項目觸發了 <code>else</code> 分支，那麼在 `else` 區塊執行完畢後會立即發生什麼事？",
+                quiz_o1: "循環會中斷並完全停止。", quiz_o2: "程式會跳回 `while` 條件檢查，準備進行下一次迭代。", quiz_o3: "它會因為邏輯錯誤而崩潰。", btn_submit: "提交答案",
+                log_init: "初始化變數", log_while_true: "檢查 While: True (進入)", log_while_false: "檢查 While: False (終止)", log_pick: "從陣列提取項目", log_if_true: "檢查 IF: True", log_if_false: "檢查 IF: False", log_pack: "執行裝箱 (Pack)", log_juice: "執行榨汁 (Juice)",
+                empty: "空", sim_done: "模擬完成 (Complete)"
+            }
+        };
+
+        /* --- Language Toggle --- */
+        document.getElementById('langPyBtn').addEventListener('click', () => {
+            programmingLang = 'py';
+            document.getElementById('langPyBtn').className = "px-3 py-1 text-xs font-bold rounded-md bg-blue-500/20 text-blue-400 transition-colors";
+            document.getElementById('langCppBtn').className = "px-3 py-1 text-xs font-bold rounded-md text-slate-400 hover:text-slate-200 transition-colors";
+            document.getElementById('code-py').classList.remove('hidden');
+            document.getElementById('code-cpp').classList.add('hidden');
+            applyHighlight();
+        });
+
+        document.getElementById('langCppBtn').addEventListener('click', () => {
+            programmingLang = 'cpp';
+            document.getElementById('langCppBtn').className = "px-3 py-1 text-xs font-bold rounded-md bg-blue-500/20 text-blue-400 transition-colors";
+            document.getElementById('langPyBtn').className = "px-3 py-1 text-xs font-bold rounded-md text-slate-400 hover:text-slate-200 transition-colors";
+            document.getElementById('code-cpp').classList.remove('hidden');
+            document.getElementById('code-py').classList.add('hidden');
+            applyHighlight();
+        });
+
+        document.getElementById('langToggle').addEventListener('click', () => {
+            currentLang = currentLang === 'en' ? 'tc' : 'en';
+            document.getElementById('langLabel').innerText = i18n[currentLang].langLabel;
+            applyTranslations();
+            renderTraceTable();
+            updateUI();
+        });
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (i18n[currentLang][key]) {
+                    el.innerHTML = i18n[currentLang][key];
+                }
+            });
+            document.getElementById('thinkInput').placeholder = currentLang === 'en' 
+                ? "Draft your thoughts here before checking the answer..." 
+                : "在查看解析前，請在此草擬你的思考過程...";
+        }
+
+        /* --- Simulator Engine --- */
+        function getEmojiBelt() {
+            return belt.map(a => a === 'R' ? '🍎' : '🍏').join('') || `<span class="text-slate-400 text-sm font-sans italic">${i18n[currentLang].empty}</span>`;
+        }
+        function getEmojiApple() {
+            return currentApple ? (currentApple === 'R' ? '🍎' : '🍏') : '-';
+        }
+
+        function appendToTraceTable(actionKey) {
+            traceData.push({
+                action: actionKey,
+                beltStr: getEmojiBelt(),
+                appleStr: getEmojiApple(),
+                packCount: packed,
+                juiceCount: juiced
+            });
+            renderTraceTable(true);
+        }
+
+        function renderTraceTable(animateLast = false) {
+            const tbody = document.getElementById('traceTableBody');
+            tbody.innerHTML = traceData.map((row, idx) => {
+                const isLast = animateLast && idx === traceData.length - 1;
+                return `
+                <tr class="${isLast ? 'new-row' : 'hover:bg-slate-50 transition-colors'}">
+                    <td class="py-3 px-4 font-sans font-medium text-slate-700">${i18n[currentLang][row.action]}</td>
+                    <td class="py-3 px-3 border-l border-slate-100 text-center text-lg tracking-widest">${row.beltStr}</td>
+                    <td class="py-3 px-3 border-l border-slate-100 text-center text-lg">${row.appleStr}</td>
+                    <td class="py-3 px-3 border-l border-slate-100 text-center">${row.packCount}</td>
+                    <td class="py-3 px-3 border-l border-slate-100 text-center">${row.juiceCount}</td>
+                </tr>`;
+            }).join('');
+            const wrapper = tbody.parentElement.parentElement;
+            wrapper.scrollTop = wrapper.scrollHeight;
+        }
+
+        function applyHighlight() {
+            document.querySelectorAll('.highlight-line').forEach(el => el.classList.remove('highlight-line'));
+            if (currentLineNum > 0 && step !== 99) {
+                const prefix = programmingLang === 'py' ? 'py-line' : 'cpp-line';
+                const el = document.getElementById(prefix + currentLineNum);
+                if (el) el.classList.add('highlight-line');
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('beltState').innerHTML = getEmojiBelt();
+            document.getElementById('appleState').innerText = getEmojiApple();
+            document.getElementById('boxState').innerText = packed;
+            document.getElementById('juiceState').innerText = juiced;
+            
+            applyHighlight();
+
+            const stepBtn = document.getElementById('stepBtn');
+            const stepBtnText = document.getElementById('stepBtnText');
+            if(step === 99) {
+                stepBtn.disabled = true;
+                stepBtnText.innerText = i18n[currentLang].sim_done;
+                stepBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-600/20');
+                stepBtn.classList.add('bg-green-600');
+            } else {
+                stepBtn.disabled = false;
+                stepBtnText.innerText = i18n[currentLang].btn_step;
+                stepBtn.classList.remove('bg-green-600');
+                stepBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-600/20');
+            }
+            document.getElementById('prevBtn').disabled = historyState.length === 0;
+        }
+
+        function saveState() {
+            historyState.push({
+                belt: [...belt],
+                step: step,
+                packed: packed,
+                juiced: juiced,
+                currentApple: currentApple,
+                traceData: JSON.parse(JSON.stringify(traceData)),
+                currentLineNum: currentLineNum
+            });
+        }
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (historyState.length === 0) return;
+            const lastState = historyState.pop();
+            belt = lastState.belt;
+            step = lastState.step;
+            packed = lastState.packed;
+            juiced = lastState.juiced;
+            currentApple = lastState.currentApple;
+            traceData = lastState.traceData;
+            currentLineNum = lastState.currentLineNum;
+            renderTraceTable();
+            updateUI();
+        });
+
+        function initSim() {
+            belt = [...initialApples];
+            step = 0; packed = 0; juiced = 0; currentApple = null;
+            traceData = [];
+            historyState = [];
+            currentLineNum = 0; // Starts with no line highlighted, until first step
+            updateUI();
+            appendToTraceTable('log_init');
+        }
+
+        document.getElementById('resetBtn').addEventListener('click', initSim);
+
+        document.getElementById('stepBtn').addEventListener('click', () => {
+            if (step === 99) return;
+            saveState();
+
+            if (step === 0) {
+                currentLineNum = 2; // while condition line
+                if (belt.length > 0) {
+                    appendToTraceTable('log_while_true');
+                    step = 1;
+                } else {
+                    appendToTraceTable('log_while_false');
+                    step = 99; // End
+                }
+            } else if (step === 1) {
+                currentApple = belt.shift();
+                currentLineNum = 3; // pop/erase line
+                appendToTraceTable('log_pick');
+                step = 2;
+            } else if (step === 2) {
+                currentLineNum = 4; // if condition line
+                if (currentApple === 'R') {
+                    appendToTraceTable('log_if_true');
+                    step = 3;
+                } else {
+                    appendToTraceTable('log_if_false');
+                    step = 4;
+                }
+            } else if (step === 3) {
+                packed++;
+                currentLineNum = 5; // pack++ line
+                appendToTraceTable('log_pack');
+                step = 0;
+            } else if (step === 4) {
+                currentLineNum = 6; // else line
+                step = 5;
+            } else if (step === 5) {
+                juiced++;
+                currentLineNum = 7; // juice++ line
+                appendToTraceTable('log_juice');
+                step = 0;
+            }
+            updateUI();
+        });
+
+        /* --- Think & Link Logic --- */
+        document.getElementById('compareBtn').addEventListener('click', () => {
+            const ta = document.getElementById('thinkInput');
+            ta.readOnly = true;
+            ta.classList.add('locked-textarea');
+            
+            const box = document.getElementById('answerBox');
+            box.classList.remove('hidden');
+            box.style.animation = 'fadeIn 0.5s ease-out';
+            
+            document.getElementById('compareBtn').style.display = 'none';
+        });
+
+        /* --- Mini-Quiz Logic --- */
+        document.getElementById('submitQuizBtn').addEventListener('click', () => {
+            const selected = document.querySelector('input[name="q1"]:checked');
+            const fb = document.getElementById('quizFeedback');
+            
+            fb.classList.remove('hidden', 'bg-amber-100', 'text-amber-800', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            
+            if (!selected) {
+                fb.classList.add('bg-amber-100', 'text-amber-800');
+                fb.innerText = currentLang === 'en' ? "Please select an answer." : "請選擇一個答案。";
+                return;
+            }
+
+            if (selected.value === "2") {
+                fb.classList.add('bg-green-100', 'text-green-800');
+                fb.innerHTML = `<i class="fa-solid fa-check mr-2"></i>${currentLang === 'en' ? 'Correct! After an `if/else` block completes, the program loops back to evaluate the `while` condition.' : '正確！執行完 `if/else` 後，程式會跳回並再次評估 while 條件。'}`;
+            } else {
+                fb.classList.add('bg-red-100', 'text-red-800');
+                fb.innerHTML = `<i class="fa-solid fa-xmark mr-2"></i>${currentLang === 'en' ? 'Incorrect. The `else` block does not break loops. The logic naturally returns to the loop condition.' : '錯誤。`else` 區塊不會中斷循環，邏輯會自然回到迴圈的條件判斷。'}`;
+            }
+        });
+
+        // Initialize App
+        applyTranslations();
+        initSim();
+
+    </script>
+</body>
+</html>
